@@ -1,5 +1,16 @@
 import re
 
+
+def readWordlist(i):
+    with open("wordlists/"+str(i)+".txt","r") as f:
+                    b=f.read()
+                    return re.split(r'[\n,|]',b)
+
+wordlistnumbers=[1,2,5]
+WORDLISTS={}
+for i in wordlistnumbers:
+    WORDLISTS[i]=readWordlist(i)
+
 LETTERS={
     "Lamp":["l","s"],
     "Egg": ["e"],
@@ -10,54 +21,14 @@ LETTERS={
     "Mug":["m","c"],
     "Apple":["a"],
     "Hammer Head":["h","a","i"],
-    #"Diving Weight":["w","d","l"],
-    #"Reverse Mousetrap":["t","m","r"],
-    #"Saw":["t","s","h"],
+    "Diving Weight":["w","d","l"],
+    "Reverse Mousetrap":["t","m","r"],
+    "Saw":["t","s","h"],
     "Lawnmower":["l","e","s"]
 }
-LETTERS={
-    "Lamp":["a","b"],
-    "Cage":["s","d","e"],
-    "Egg": ["m"],
-    "Saw":["t","s","h"],
-    "Egg2":["e"],
-}
-print(len(LETTERS))
-pattern=["e","m","a","i","l"," ", "m","_"," ", "_", " ", "_", "_"]#, "_", "_","_"]
-pattern=["m","_"," ","_","_"]
 
-def beginFromNextFreePosition(currPattern:list, currLetters:dict[str, list[str]],skipto:int):
-    # TODO skipping properly
+pattern=["e","m","a","i","l"," ", "m","_"," ", "_", " ", "_", "_", "_", "_","_"]
 
-    k=0
-    for c in range(len(currPattern)-skipto+1):
-        k=c+skipto
-        if k==len(currPattern):
-            decideOnLetter(currPattern,currLetters, skipto)
-            return 
-                #decideOnLetter(currPattern,currLetters,0)
-            
-        if currPattern[k]==" ":
-            #TODO check if las word is word
-            continue
-        if currPattern[k]!="_":
-            #print("next free is "+str(k))
-            continue
-        
-
-        for n in currLetters:
-            newLetters = currLetters.copy()
-            letter=newLetters.pop(n)
-            newPattern=currPattern.copy()
-            newPattern[k]=(n,None)
-            if decideOnLetter(newPattern,newLetters,k,1):
-                beginFromNextFreePosition(newPattern,newLetters,skipto=k)
-            else:
-                continue
-            
-        break
-        #print(free)
-    #print("exit one up")
 
 def cleanOnePredefined(pattern:list, letters:dict[str, list[str]]):
     countOfDirty=0
@@ -75,38 +46,6 @@ def cleanOnePredefined(pattern:list, letters:dict[str, list[str]]):
     if countOfDirty < 1:
         precleanedPatterns.append((pattern,letters))
 
-def decideOnLetter(pattern:list, letters:dict[str, list[str]],skipto,limit=-1):
-    countOfNotDecided=0
-    k=0
-    ret = False
-    for h in range(len(pattern)-skipto):
-        k=h+skipto
-        if pattern[k]==' ' or pattern[k]=="_":
-            continue
-        if pattern[k][1]!=None:
-            continue
-
-        countOfNotDecided+=1
-        
-        for n in range(len(LETTERS[pattern[k][0]])):
-                newPattern:list[(str,int)]=pattern.copy()
-                newPattern[k]=(newPattern[k][0],n)
-                if (k<len(newPattern)-1 and newPattern[k+1]==" " and not renderPattern(newPattern)) or k>=len(newPattern)-1:
-                    continue
-                    #i=1
-                if h<limit:
-                    if decideOnLetter(newPattern, letters,k):
-                        ret = True
-                else:
-                    return renderPattern(newPattern)
-                        
-        break
-            
-
-    if countOfNotDecided<1:
-        return renderPattern(pattern)
-    return ret
-
 
 def renderPattern(pattern:list[(str,int)]):
     s=""
@@ -117,11 +56,9 @@ def renderPattern(pattern:list[(str,int)]):
             continue
 
         if k[1]==None:
-                return True
+            continue
+        
         s+=LETTERS[k[0]][k[1]]
-    
-    
-    print(s)
     return s
 
 def isAllWords(s):
@@ -137,14 +74,37 @@ def isAllWords(s):
 def checkIsWord(word:str):
     l=len(word)
     isInside=False
-    with open("wordlists/"+str(l)+".txt","r") as f:
-        b=f.read()
-        lis=re.split(r'[\n,|]',b)
-        word = word.replace("_",".")
-        for s in lis:
-            if re.match(word,s) != None:
-                isInside=True
+    
+    word = word.replace("_",".")
+    for s in WORDLISTS[l]:
+        if re.match(word,s) != None:
+            isInside=True
     return isInside
+
+def beginFromNextFreePosition(pattern, letters, skip=0):
+    #nextFree=0
+    for i in range(len(pattern)-skip):
+        k=i+skip
+        if pattern[k] == "_":
+            for n in letters:
+                newLetters = letters.copy()
+                letter=newLetters.pop(n)
+                for a in range(len(LETTERS[n])):
+                    newPattern=pattern.copy()
+                    newPattern[k]=(n,a)
+                    s = renderPattern(newPattern)
+                    if isAllWords(s):
+                        if len(pattern)<=k+1 or pattern[k+1]==" ":
+                            print(s)
+                            #print(newPattern)
+                        
+                        beginFromNextFreePosition(newPattern,newLetters, k)
+                
+            break
+    
+
+
+
 
 precleanedPatterns=[]
 def main():
@@ -157,7 +117,7 @@ def main():
     cleanOnePredefined(pattern, letters)
     print("All possible patterns for your input computed ("+str(len(precleanedPatterns))+")")
     for p in precleanedPatterns:
-        beginFromNextFreePosition(p[0],p[1],0)
+        beginFromNextFreePosition(p[0],p[1])
 
     
 
