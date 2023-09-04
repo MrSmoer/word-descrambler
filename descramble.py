@@ -12,22 +12,22 @@ for i in wordlistnumbers:
     WORDLISTS[i]=readWordlist(i)
 
 LETTERS={
-    "Lamp":["l","s"],
+    "Diving Weight":["weight","d","b","t"],
+    "Mug":["m","c"],
+    "Hammer Head":["h","a","i"],
+    "Reverse Mousetrap":["t","m","r"],
+    "Lamp":["l"],
+    "Apple":["a"],
     "Egg": ["e"],
     "Egg2":["e"],
-    "Cage":["c","a"],
-    "Mallet":["m","h","r"],
+    "Saw":["s","t","h"],
+    "Lawnmower":["l","m","e","s"],
+    "Mallet":["m","h","s"],
     "Icecream":["i","v"],
-    "Mug":["m","c"],
-    "Apple":["a"],
-    "Hammer Head":["h","a","i"],
-    "Diving Weight":["w","d","l"],
-    "Reverse Mousetrap":["t","m","r"],
-    "Saw":["t","s","h"],
-    "Lawnmower":["l","e","s"]
+    "Cage":["c","a","b"],
 }
 
-pattern=["e","m","a","i","l"," ", "m","_"," ", "_", " ", "_", "_", "_", "_","_"]
+pattern=["e","m","a","i","l"," ", "m","e"," ", "_", " ", "_", "_", "_", "_","_"]
 
 
 def cleanOnePredefined(pattern:list, letters:dict[str, list[str]]):
@@ -58,7 +58,7 @@ def renderPattern(pattern:list[(str,int)]):
         if k[1]==None:
             continue
         
-        s+=LETTERS[k[0]][k[1]]
+        s+=LETTERS[k[0]][k[1]][0]
     return s
 
 def isAllWords(s):
