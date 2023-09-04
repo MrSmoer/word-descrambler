@@ -50,7 +50,7 @@ def beginFromNextFreePosition(currPattern:list, currLetters:dict[str, list[str]]
             letter=newLetters.pop(n)
             newPattern=currPattern.copy()
             newPattern[k]=(n,None)
-            if decideOnLetter(newPattern,newLetters,k,limit=1):
+            if decideOnLetter(newPattern,newLetters,k,1):
                 beginFromNextFreePosition(newPattern,newLetters,skipto=k)
             else:
                 continue
@@ -76,7 +76,6 @@ def cleanOnePredefined(pattern:list, letters:dict[str, list[str]]):
         precleanedPatterns.append((pattern,letters))
 
 def decideOnLetter(pattern:list, letters:dict[str, list[str]],skipto,limit=-1):
-    
     countOfNotDecided=0
     k=0
     ret = False
@@ -88,17 +87,23 @@ def decideOnLetter(pattern:list, letters:dict[str, list[str]],skipto,limit=-1):
             continue
 
         countOfNotDecided+=1
-    
+        
         for n in range(len(LETTERS[pattern[k][0]])):
-            newPattern:list[(str,int)]=pattern.copy()
-            newPattern[k]=(newPattern[k][0],n)
-            if (k<len(newPattern)-1 and newPattern[k+1]==" " and not renderPattern(newPattern)) or k>=len(newPattern)-1:
-                continue
-                #i=1
-            ret = decideOnLetter(newPattern, letters,k)
+                newPattern:list[(str,int)]=pattern.copy()
+                newPattern[k]=(newPattern[k][0],n)
+                if (k<len(newPattern)-1 and newPattern[k+1]==" " and not renderPattern(newPattern)) or k>=len(newPattern)-1:
+                    continue
+                    #i=1
+                if h<limit:
+                    if decideOnLetter(newPattern, letters,k):
+                        ret = True
+                else:
+                    return renderPattern(newPattern)
+                        
         break
+            
 
-    if countOfNotDecided<1 or (h == limit and ret):
+    if countOfNotDecided<1:
         return renderPattern(pattern)
     return ret
 
@@ -114,11 +119,11 @@ def renderPattern(pattern:list[(str,int)]):
         if k[1]==None:
                 return True
         s+=LETTERS[k[0]][k[1]]
-    allwords=isAllWords(s)
+    
     
     print(s)
+    return s
 
-    return allwords
 def isAllWords(s):
     words=s.split(" ")
     allwords=True
