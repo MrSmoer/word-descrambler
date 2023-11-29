@@ -4,7 +4,7 @@ A try to bruteforce I did a things 5000$ challenge of finding the right thing to
 This is incomplete
 
 ## The puzzle
-in his video []() at some timestamp there was a piece of paper lying on the floor: ``_ _ _ _ _  _ _  _  _ _ _ _ _``
+in his video [I regret making your horrible video ideas](https://www.youtube.com/watch?v=Jf4GBKmU8Ww) at some timestamp there was a piece of paper lying on the floor: ``_ _ _ _ _  _ _  _  _ _ _ _ _``
 
 It was obvious that throughout the video there was a stuffed duck sitting on or close to 13/14 things (unlcear whether to include the last szene or not)
 
