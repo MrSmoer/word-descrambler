@@ -1,4 +1,5 @@
 import re
+import string
 from unittest import skip
 
 
@@ -47,48 +48,36 @@ predefined_pattern = ["e", "m", "a", "i", "l", " ", "m", "e", " ", "i", " ",
 
 def clean_one_predefined(pat: list[str] | (list[tuple[str, int] | str]),
                          duck_letters: dict[str, list[str]],
-                         skip=0):
+                         pos=0):
     """ generates all possibilites for the letters to fulfill the given
     pattern, and appends them to the global precleaned_patterns
     this function is recursive
     a letter is dirty if it is predefined, but not predefined as
     a tuple -> just a string
     """
-    unchosen_dirty_letters = 0
-    for index_in_pattern, letter_to_replace in enumerate(pat[skip:]):
-        # loop only over the dirty letters in the current predefined pattern
-        if letter_to_replace != ' ' and letter_to_replace != '_':
-            if isinstance(letter_to_replace, tuple):
-                continue
-            unchosen_dirty_letters += 1
-            # try every letter left in the current duckletters
-            for duck_letter in duck_letters:
-                # print(duck_letter)
-                subletters = duck_letters[duck_letter]
-                # just take first letter of subletters, its the only relevant
-                for index_in_subletters, subletter in enumerate(subletters):
-                    cut_subletter = subletter[0]
-                    # print(f"{subletter}kurz {cut_subletter}")
-                    if letter_to_replace == cut_subletter:
-                        # copy current pattern for next depth
-                        newLetters = duck_letters.copy()
-                        newPattern = pat.copy()
-                        # replace the letter_to_replace with the chosen tuple
-                        # from duckletters
-                        newPattern[index_in_pattern+skip] = (duck_letter,
-                                                        index_in_subletters)
-                        # remove the chosen  duckletter it cannot be used twice
-                        newLetters.pop(duck_letter)
-                        clean_one_predefined(newPattern, newLetters, index_in_pattern)
+    if pos >= len(pat):
+        return [pat]
+    res = []
+    if pat[pos][0] == ' ' or pat[pos][0] == '_':
+        return clean_one_predefined(pat, duck_letters, pos + 1)
+    for dl in duck_letters:
+        for sl in duck_letters[dl]:
+            if sl[0] == pat[pos][0]:
+                new_duck_letters = duck_letters.copy()
+                new_pat = pat.copy()
+                del new_duck_letters[dl]
+                new_pat[pos] = (pat[pos], dl)
+                res.extend(clean_one_predefined(new_pat, new_duck_letters, pos + 1))
+    return res
 
-    # ends recursion in deepest stage, if no unreplaced letters left in pattern 
-    if unchosen_dirty_letters < 1:
-        # print(" ".join(duck_letters.keys()))
-        PRECLEANED_PATTERNS.add(" ".join(duck_letters.keys()))
-        if len(PRECLEANED_PATTERNS) % 1 == 0:
-            print(f"{len(PRECLEANED_PATTERNS)}")
-            # f"asdf{len(PRECLEANED_PATTERNS)})
-            pass
+
+
+input_pattern = list(filter(lambda x: x[0] != ' ' and x[0] != '_', predefined_pattern))
+res = clean_one_predefined(input_pattern, LETTERS)
+
+res = list(map(lambda x: (list(map(lambda y: y[1], x))), res))
+res = list(map(lambda x: [z for z in LETTERS.keys() if z not in x], res))
+print(res)
 
 
 def render_pattern(pat: list[tuple[str, int]] | list[str]):
@@ -98,14 +87,15 @@ def render_pattern(pat: list[tuple[str, int]] | list[str]):
     the index of the actual word in a duckword """
     result_str = ""
     for symbol_tuple in pat:
-        if not isinstance(symbol_tuple, tuple):
+        if symbol_tuple == "_" or symbol_tuple == " " or symbol_tuple == "a" or symbol_tuple == "b" or symbol_tuple == "c" or symbol_tuple == "d" or symbol_tuple == "e" or symbol_tuple == "f" or symbol_tuple == "g" or symbol_tuple == "h" or symbol_tuple == "i" or symbol_tuple == "j" or symbol_tuple == "k" or symbol_tuple == "l" or symbol_tuple == "m" or symbol_tuple == "n" or symbol_tuple == "o" or symbol_tuple == "p" or symbol_tuple == "q" or symbol_tuple == "r" or symbol_tuple == "s" or symbol_tuple == "t" or symbol_tuple == "u" or symbol_tuple == "v" or symbol_tuple == "w" or symbol_tuple == "x" or symbol_tuple == "y" or symbol_tuple == "z":
             result_str += str(symbol_tuple)
             continue
 
         if symbol_tuple[1] is None:
             continue
-
-        result_str += LETTERS[symbol_tuple[0]][symbol_tuple[1]][0]
+        # print(symbol_tuple)
+        result_str += symbol_tuple[0]
+    # print(result_str)
     return result_str
 
 
@@ -141,29 +131,35 @@ def begin_from_next_free_position(pattern: list[str] |
     """ populates the free _ with the leftover letters
         recursive function
     """
+    # print("a")
     # begin at index skip
-    for i in range(len(pattern)-skip):
-        k = i+skip
-        if pattern[k] == "_":
-            for n in letters:
-                new_letters = letters.copy()
-                new_letters.pop(n)
-                for a in range(len(LETTERS[n])):
-                    new_pattern = pattern.copy()
-                    new_pattern[k] = (n, a)
-                    s = render_pattern(new_pattern)
-                    if is_all_words(s):
-                        if len(pattern) <= k+1 or pattern[k+1] == " ":
-                            print(s)
-                            POSSIBLE_SOULTIONS.add(s)
-                            # print(newPattern)
+    k = skip
+    if k >= len(pattern):
+        return
+    if pattern[k] == "_":
+        for n in letters:
+            # print(n)
+            new_letters = letters.copy()
+            # print(new_letters)
+            new_letters.remove(n)
+            for w in LETTERS[n]:
+                new_pattern = pattern.copy()
+                new_pattern[k] = (w[0], n)
+                s = render_pattern(new_pattern)
+                if is_all_words(s):
+                    if len(pattern) <= k+1 or pattern[k+1] == " ":
+                        # print(s)
+                        POSSIBLE_SOULTIONS.add(s)
+                        # print(newPattern)
 
-                        begin_from_next_free_position(new_pattern, new_letters,
-                                                      k)
-            break
+                    begin_from_next_free_position(new_pattern, new_letters,
+                                                    k+1)
+            # break
+    else:
+            begin_from_next_free_position(pattern, letters, k+1)
 
 
-PRECLEANED_PATTERNS = set()
+PRECLEANED_PATTERNS = []
 POSSIBLE_SOULTIONS = set()
 
 
@@ -172,13 +168,15 @@ def main():
     print(predefined_pattern)
     print("ASDF")
     print(render_pattern(predefined_pattern))
-    clean_one_predefined(predefined_pattern, letters)
+    PRECLEANED_PATTERNS = clean_one_predefined(predefined_pattern, letters, 0)
+    print(PRECLEANED_PATTERNS)
     print("All possible patterns for your input computed (" +
           str(len(PRECLEANED_PATTERNS))+")")
-    for p in PRECLEANED_PATTERNS:
+    for i, p in enumerate(PRECLEANED_PATTERNS):
         # breakpoint()
-        begin_from_next_free_position(p[0], p[1])
-
+        # print(p)
+        begin_from_next_free_position(p, res[i])
+        print(f"[{i}/{len(PRECLEANED_PATTERNS)}]")
         for p in POSSIBLE_SOULTIONS:
             print(p)
 
